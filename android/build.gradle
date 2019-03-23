@@ -36,5 +36,8 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
+    implementation files('libs/jxl.jar')
+    implementation files('libs/Serialport-module.jar')
+    implementation files('libs/xdl2d&RFID.jar')
 }
   
