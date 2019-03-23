@@ -26,7 +26,4 @@ public class RNRfidOrca50Package implements ReactPackage {
 	public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
 		return Collections.emptyList();
 	}
-
-	private void Hi() {
-	}
 }
