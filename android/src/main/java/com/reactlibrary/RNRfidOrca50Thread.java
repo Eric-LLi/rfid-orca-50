@@ -108,7 +108,6 @@ public abstract class RNRfidOrca50Thread extends Thread {
 					event.putString("statusName", statusName);
 					dispatchEvent("HandleError", event);
 				}
-
 			}
 
 			@Override
