@@ -1,6 +1,5 @@
 package com.reactlibrary;
 
-
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableMap;
@@ -20,7 +19,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 	private ReactApplicationContext context;
 	private int baud = 115200;
 	private String mPosPort = "dev/ttyS4";
-	private ModuleConnector connector = null;
+	private ModuleConnector connector = new ReaderConnector();;
 	private RFIDReaderHelper mReaderHelper = null;
 	private RXObserver rxObserver = null;
 
@@ -65,10 +64,9 @@ public abstract class RNRfidOrca50Thread extends Thread {
 		boolean result = false;
 		try {
 			if (!ModuleManager.newInstance().setUHFStatus(true)) {
-				throw new RuntimeException("UHF RFID power on failure,may you open in other" +
-						" Process and do not exit it");
+				throw new RuntimeException(
+						"UHF RFID power on failure,may you open in other" + " Process and do not exit it");
 			}
-			connector = new ReaderConnector();
 			result = connector.connectCom(mPosPort, baud);
 			mReaderHelper = RFIDReaderHelper.getDefaultHelper();
 			InitialListener();
