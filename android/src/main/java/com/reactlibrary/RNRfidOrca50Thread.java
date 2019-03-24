@@ -54,9 +54,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 
 	public boolean isConnected() {
 		boolean result = false;
-		if (isConnected()) {
-			result = connector.isConnected();
-		}
+		result = connector.isConnected();
 		return result;
 	}
 
