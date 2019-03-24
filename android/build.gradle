@@ -26,6 +26,9 @@ android {
     lintOptions {
         abortOnError false
     }
+    sourceSets.main {
+        jniLibs.srcDir {"$rootDir/../node_modules/react-native-rfid-orca50/android/jniLibs"}
+    }
 }
 
 repositories {

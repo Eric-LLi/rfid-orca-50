@@ -1,14 +1,4 @@
-import { NativeModules } from 'react-native';
-
-const { RNRfidOrca50 } = NativeModules;
-let instance = null;
-
-class RNRfidOrca50Scanner {
-	constructor() {
-		if (!instance) {
-			instance = this;
-		}
-	}
-}
-
-export default RNRfidOrca50Scanner;
+import OrcaScanner from './src/OrcaScanner';
+import { OrcaEvent } from './src/OrcaEvent';
+export default OrcaScanner;
+export { OrcaEvent };

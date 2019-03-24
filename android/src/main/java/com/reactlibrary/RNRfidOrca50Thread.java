@@ -19,15 +19,13 @@ public abstract class RNRfidOrca50Thread extends Thread {
 	private ReactApplicationContext context;
 	private int baud = 115200;
 	private String mPosPort = "dev/ttyS4";
-	private ModuleConnector connector = new ReaderConnector();;
+	private ModuleConnector connector;
 	private RFIDReaderHelper mReaderHelper = null;
 	private RXObserver rxObserver = null;
 
-	private byte btReadId = (byte) 0xFF;
-	private byte btRepeat = (byte) 0x01;
-
 	public RNRfidOrca50Thread(ReactApplicationContext context) {
 		this.context = context;
+		connector = new ReaderConnector();
 	}
 
 	public abstract void dispatchEvent(String name, WritableMap data);
@@ -53,9 +51,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 	}
 
 	public boolean isConnected() {
-		boolean result = false;
-		result = connector.isConnected();
-		return result;
+		return connector.isConnected();
 	}
 
 	public boolean connect() {
@@ -63,14 +59,11 @@ public abstract class RNRfidOrca50Thread extends Thread {
 		try {
 			if (!ModuleManager.newInstance().setUHFStatus(true)) {
 				throw new RuntimeException(
-						"UHF RFID power on failure,may you open in other" + " Process and do not exit it");
+						"UHF RFID power on failure,may you open in other Process and do not exit it");
 			}
 			result = connector.connectCom(mPosPort, baud);
 			mReaderHelper = RFIDReaderHelper.getDefaultHelper();
 			InitialListener();
-
-		} catch (RuntimeException ex) {
-			HandleError(ex);
 		} catch (Exception ex) {
 			HandleError(ex);
 		}
@@ -86,7 +79,6 @@ public abstract class RNRfidOrca50Thread extends Thread {
 			} catch (Exception ex) {
 				HandleError(ex);
 			}
-
 		}
 	}
 

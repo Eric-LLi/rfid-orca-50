@@ -67,9 +67,10 @@ public class RNRfidOrca50Module extends ReactContextBaseJavaModule implements Li
 	}
 
 	@ReactMethod
-	public void connect() {
+	public void connect(Callback callback) {
 		if (this.scannerthread != null) {
-			this.scannerthread.connect();
+			callback.invoke(this.scannerthread.connect());
+
 		}
 	}
 }
