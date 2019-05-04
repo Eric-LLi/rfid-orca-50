@@ -1,3 +1,4 @@
 export const OrcaEvent = {
-	ExeError: 'HandleError'
+	ExeError: 'HandleError',
+	Tag: 'TagEvent',
 };
