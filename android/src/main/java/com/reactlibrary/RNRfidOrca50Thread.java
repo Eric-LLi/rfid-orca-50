@@ -20,6 +20,8 @@ import com.rfid.rxobserver.ReaderSetting;
 import com.rfid.rxobserver.bean.RXInventoryTag;
 import com.rfid.rxobserver.bean.RXOperationTag;
 
+import java.util.ArrayList;
+
 public abstract class RNRfidOrca50Thread extends Thread {
 	private ReactApplicationContext context;
 	private byte btReadId = (byte) 0xFF;
@@ -30,6 +32,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 	private RFIDReaderHelper mReaderHelper = null;
 	private RXObserver rxObserver = null;
 	private RXTXListener mListener = null;
+	private ArrayList<String> tags = new ArrayList<>();
 
 	public RNRfidOrca50Thread(ReactApplicationContext context) {
 		this.context = context;
@@ -85,7 +88,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 	public void disconnect() {
 		if (isConnected()) {
 			try {
-				mReaderHelper.unRegisterObserver(rxObserver);
+				mReaderHelper.unRegisterObservers();
 				mReaderHelper.signOut();
 				ModuleManager.newInstance().setUHFStatus(false);
 				ModuleManager.newInstance().release();
@@ -96,8 +99,9 @@ public abstract class RNRfidOrca50Thread extends Thread {
 		}
 	}
 
-	public void reset() {
+	public void cleanTagBuffer() {
 		if (isConnected()) {
+			tags = new ArrayList<String>();
 			mReaderHelper.resetInventoryBuffer(btReadId);
 		}
 	}
@@ -148,12 +152,26 @@ public abstract class RNRfidOrca50Thread extends Thread {
 
 			@Override
 			protected void onInventoryTag(RXInventoryTag tag) {
-				Log.e("InventoryTag", tag.strEPC.trim());
+				String newTag = tag.strEPC.replaceAll(" ", "");
+
+				boolean isExisted = false;
+				for (int i = 0; i < tags.size(); i++) {
+					if (tags.get(i).equals(newTag)) {
+						isExisted = true;
+						break;
+					}
+				}
+				if (!isExisted) {
+					tags.add(newTag);
+					dispatchEvent("TagEvent", newTag);
+					Log.e("TagEvent", newTag);
+				}
 			}
 
 			@Override
 			protected void onInventoryTagEnd(RXInventoryTag.RXInventoryTagEnd tagEnd) {
-				Log.e("InventoryTagEnd", tagEnd.mTagCount + "");
+				// Log.e("TagEnd_mTotalRead", tagEnd.mTotalRead + "");
+				// Log.e("TagEnd_mTagCount", tagEnd.mTagCount + "");
 			}
 
 			@Override
@@ -220,6 +238,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 
 			@Override
 			public void onLostConnect() {
+				disconnect();
 				Log.e("onLostConnect", "onLostConnect");
 			}
 		};
