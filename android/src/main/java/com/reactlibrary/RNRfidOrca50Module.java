@@ -73,7 +73,13 @@ public class RNRfidOrca50Module extends ReactContextBaseJavaModule implements Li
 	public void connect(Callback callback) {
 		if (this.scannerthread != null) {
 			callback.invoke(this.scannerthread.connect());
+		}
+	}
 
+	@ReactMethod
+	public void cleanTagBuffer() {
+		if (this.scannerthread != null) {
+			this.scannerthread.cleanTagBuffer();
 		}
 	}
 
@@ -91,4 +97,38 @@ public class RNRfidOrca50Module extends ReactContextBaseJavaModule implements Li
 		}
 	}
 
+	@ReactMethod
+	public void barcodeRead() {
+		if (this.scannerthread != null) {
+			this.scannerthread.barcodeRead();
+		}
+	}
+
+	@ReactMethod
+	public void barcodeStop() {
+		if (this.scannerthread != null) {
+			this.scannerthread.barcodeStop();
+		}
+	}
+
+	@ReactMethod
+	public void isConnected(Callback callback) {
+		if (this.scannerthread != null) {
+			callback.invoke(this.scannerthread.isConnected());
+		}
+	}
+
+	@ReactMethod
+	public void setAntennaPower(String level) {
+		if (this.scannerthread != null) {
+			this.scannerthread.setAntennaPower(level);
+		}
+	}
+
+	@ReactMethod
+	public void getAntennaPower() {
+		if (this.scannerthread != null) {
+			this.scannerthread.getAntennaPower();
+		}
+	}
 }

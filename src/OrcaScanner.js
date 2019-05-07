@@ -12,7 +12,9 @@ class RNRfidOrca50Scanner {
 			this.oncallbacks = [];
 
 			DeviceEventEmitter.addListener(OrcaEvent.Tag, this.handleTagEvent);
+			DeviceEventEmitter.addListener(OrcaEvent.Barcode, this.handleBarcodeEvent);
 			DeviceEventEmitter.addListener(OrcaEvent.ExeError, this.ExeErrorEvent);
+			DeviceEventEmitter.addListener(OrcaEvent.GetPowerLevel, this.GetPowerLevel);
 		}
 	}
 
@@ -24,6 +26,13 @@ class RNRfidOrca50Scanner {
 		}
 	}
 
+	handleBarcodeEvent = barcode => {
+		if (this.oncallbacks.hasOwnProperty(OrcaEvent.Barcode)) {
+			this.oncallbacks[OrcaEvent.Barcode].forEach(callback => {
+				callback(barcode);
+			});
+		}
+	}
 	ExeErrorEvent = event => {
 		if (this.oncallbacks.hasOwnProperty(OrcaEvent.ExeError)) {
 			this.oncallbacks[OrcaEvent.ExeError].forEach(callback => {
@@ -32,6 +41,16 @@ class RNRfidOrca50Scanner {
 		}
 	};
 
+	GetPowerLevel = level => {
+		if (this.oncallbacks.hasOwnProperty(OrcaEvent.GetPowerLevel)) {
+			this.oncallbacks[OrcaEvent.GetPowerLevel].forEach(callback => {
+				callback(level);
+			});
+		}
+	}
+	disconnect = () => {
+		RNRfidOrca50.disconnect();
+	}
 	connect = callback => {
 		RNRfidOrca50.connect(callback);
 	};
@@ -54,11 +73,29 @@ class RNRfidOrca50Scanner {
 		}
 	}
 
+	isConnected(callback) {
+		RNRfidOrca50.isConnected(callback);
+	}
 	startRead() {
 		RNRfidOrca50.startRead();
 	}
 	stopRead() {
 		RNRfidOrca50.stopRead();
+	}
+	barcodeRead(){
+		RNRfidOrca50.barcodeRead();
+	}
+	barcodeStop(){
+		RNRfidOrca50.barcodeStop();
+	}
+	cleanTagBuffer() {
+		RNRfidOrca50.cleanTagBuffer();
+	}
+	setAntennaPower(level) {
+		RNRfidOrca50.setAntennaPower(level);
+	}
+	getAntennaPower(){
+		RNRfidOrca50.getAntennaPower();
 	}
 }
 

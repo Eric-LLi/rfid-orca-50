@@ -11,10 +11,13 @@ import com.facebook.react.bridge.WritableMap;
 import com.module.interaction.RXTXListener;
 import com.nativec.tools.ModuleManager;
 import com.module.interaction.ModuleConnector;
+import com.xdl2d.scanner.TDScannerConnector;
+import com.xdl2d.scanner.TDScannerHelper;
 import com.rfid.RFIDReaderHelper;
 import com.rfid.ReaderConnector;
 import com.rfid.bean.MessageTran;
 import com.rfid.rxobserver.RXObserver;
+import com.xdl2d.scanner.callback.RXCallback;
 import com.rfid.config.*;
 import com.rfid.rxobserver.ReaderSetting;
 import com.rfid.rxobserver.bean.RXInventoryTag;
@@ -24,6 +27,8 @@ import java.util.ArrayList;
 
 public abstract class RNRfidOrca50Thread extends Thread {
 	private ReactApplicationContext context;
+
+	// RFID
 	private byte btReadId = (byte) 0xFF;
 	private byte btRepeat = (byte) 0x01;
 	private int baud = 115200;
@@ -34,9 +39,17 @@ public abstract class RNRfidOrca50Thread extends Thread {
 	private RXTXListener mListener = null;
 	private ArrayList<String> tags = new ArrayList<>();
 
+	// Barcode
+	private int barcode_baud = 9600;
+	private String barcode_port = "dev/ttyS1";
+	private TDScannerHelper mScanner;
+	private ModuleConnector mConnector;
+	private RXCallback callback;
+
 	public RNRfidOrca50Thread(ReactApplicationContext context) {
 		this.context = context;
 		connector = new ReaderConnector();
+		mConnector = new TDScannerConnector();
 	}
 
 	public abstract void dispatchEvent(String name, WritableMap data);
@@ -48,12 +61,14 @@ public abstract class RNRfidOrca50Thread extends Thread {
 	public void onHostResume() {
 		if (isConnected()) {
 			ModuleManager.newInstance().setUHFStatus(true);
+			ModuleManager.newInstance().setScanStatus(true);
 		}
 	}
 
 	public void onHostPause() {
 		if (isConnected()) {
 			ModuleManager.newInstance().setUHFStatus(false);
+			ModuleManager.newInstance().setScanStatus(false);
 		}
 	}
 
@@ -68,35 +83,64 @@ public abstract class RNRfidOrca50Thread extends Thread {
 
 	public boolean connect() {
 		boolean result = false;
+		boolean barcodeResult = false;
 		try {
+			// RFID
 			result = connector.connectCom(mPosPort, baud);
 			mReaderHelper = RFIDReaderHelper.getDefaultHelper();
 			if (!ModuleManager.newInstance().setUHFStatus(true)) {
 				throw new RuntimeException(
 						"UHF RFID power on failure,may you open in other Process and do not exit it");
 			}
-			InitialListener();
 			int triggerResult = mReaderHelper.setTrigger(true);
 			Log.e("triggerResult", triggerResult + "");
+			stopRead();
 
+			// Barcode
+			barcodeResult = mConnector.connectCom(barcode_port, barcode_baud);
+			mScanner = TDScannerHelper.getDefaultHelper();
+			if (!ModuleManager.newInstance().setScanStatus(false)) {
+				throw new RuntimeException(
+						"Barcode scanner on failure,may you open in other Process and do not exit" + " it");
+			}
+			InitialListener();
 		} catch (Exception ex) {
 			HandleError(ex);
 		}
-		return result;
+		return result && barcodeResult;
 	}
 
 	public void disconnect() {
-		if (isConnected()) {
-			try {
-				mReaderHelper.unRegisterObservers();
-				mReaderHelper.signOut();
-				ModuleManager.newInstance().setUHFStatus(false);
-				ModuleManager.newInstance().release();
-				connector.disConnect();
-			} catch (Exception ex) {
-				HandleError(ex);
-			}
+		if (mReaderHelper != null) {
+			mReaderHelper.unRegisterObserver(rxObserver);
+			mReaderHelper.signOut();
 		}
+		if (mScanner != null) {
+			mScanner.signOut();
+		}
+		if (connector != null) {
+			connector.disConnect();
+		}
+		if (mConnector != null) {
+			mConnector.disConnect();
+		}
+		ModuleManager.newInstance().setScanStatus(false);
+		ModuleManager.newInstance().setUHFStatus(false);
+		ModuleManager.newInstance().release();
+
+		// if (isConnected()) {
+		// try {
+		// mReaderHelper.unRegisterObservers();
+		// mReaderHelper.signOut();
+		// ModuleManager.newInstance().setUHFStatus(false);
+		// ModuleManager.newInstance().setScanStatus(false);
+		// ModuleManager.newInstance().release();
+		// connector.disConnect();
+		// mConnector.disConnect();
+		// } catch (Exception ex) {
+		// HandleError(ex);
+		// }
+		// }
 	}
 
 	public void cleanTagBuffer() {
@@ -107,16 +151,15 @@ public abstract class RNRfidOrca50Thread extends Thread {
 	}
 
 	public void startRead() {
-
-		if (isConnected()) {
-			try {
+		try {
+			Thread.sleep(1000);
+			if (isConnected()) {
 				byte status = (byte) Integer.parseInt("23", 16);
 				MessageTran messageTran = new MessageTran(btReadId, (byte) 0xA0, new byte[] { status });
 				mReaderHelper.sendCommand(messageTran.getAryTranData());
-				// mReaderHelper.realTimeInventory(btReadId, btRepeat);
-			} catch (Exception ex) {
-				HandleError(ex);
 			}
+		} catch (Exception ex) {
+			HandleError(ex);
 		}
 	}
 
@@ -128,26 +171,77 @@ public abstract class RNRfidOrca50Thread extends Thread {
 		}
 	}
 
+	public void barcodeRead() {
+		try {
+			Thread.sleep(1000);
+			if (isConnected()) {
+				if (!ModuleManager.newInstance().setScanStatus(true)) {
+					throw new RuntimeException("Barcode scanner connect fail");
+				}
+			}
+		} catch (Exception ex) {
+			HandleError(ex);
+		}
+	}
+
+	public void barcodeStop() {
+		try {
+			Thread.sleep(1000);
+			if (isConnected()) {
+				if (!ModuleManager.newInstance().setScanStatus(false)) {
+					throw new RuntimeException("Barcode scanner disconnect fail");
+				}
+			}
+		} catch (Exception ex) {
+			HandleError(ex);
+		}
+	}
+
+	public void setAntennaPower(String powerLevel) {
+		if (isConnected()) {
+			byte power = (byte) Integer.parseInt(powerLevel);
+			mReaderHelper.setOutputPower(btReadId, power);
+		}
+	}
+
+	public void getAntennaPower() {
+		try {
+			Thread.sleep(1000);
+			if (isConnected()) {
+				mReaderHelper.getOutputPower(btReadId);
+			}
+		} catch (Exception ex) {
+			HandleError(ex);
+		}
+
+	}
+
 	private void InitialListener() {
 		rxObserver = new RXObserver() {
 
 			@Override
 			protected void onExeCMDStatus(byte cmd, byte status) {
-				WritableMap event = Arguments.createMap();
 				String cmdName = CMD.format(cmd);
+				String statusName = ERROR.format(status);
 				if (status != 0) {
-					String statusName = ERROR.format(status);
-					Log.e("onExeCMDStatus", cmdName);
-					Log.e("onExeCMDStatus", statusName);
-					event.putString("cmdName", cmdName);
-					event.putString("statusName", statusName);
-					dispatchEvent("HandleError", event);
+					// If not success, thrown error
+					if (status != 16) {
+						HandleError(new Exception(cmdName + " " + statusName));
+					} else {
+						Log.e("cmdName", cmdName);
+						Log.e("statusName", statusName);
+					}
 				}
 			}
 
 			@Override
 			protected void refreshSetting(ReaderSetting readerSetting) {
 				Log.e("refreshSetting", "refreshSetting");
+				if (readerSetting.btAryOutputPower.length > 0) {
+					String power = readerSetting.btAryOutputPower[0] + "";
+					// String power = new String(String.valueOf(readerSetting.btAryOutputPower[0]));
+					dispatchEvent("getPowerLevel", power);
+				}
 			}
 
 			@Override
@@ -243,13 +337,20 @@ public abstract class RNRfidOrca50Thread extends Thread {
 			}
 		};
 
+		callback = new RXCallback() {
+			public void callback(byte[] bytes) {
+				String barcode = new String(bytes);
+				dispatchEvent("BarcodeEvent", barcode);
+				Log.e("2D", barcode);
+			}
+		};
+
 		mReaderHelper.registerObserver(rxObserver);
 		mReaderHelper.setRXTXListener(mListener);
+		mScanner.regist2DCodeData(callback);
 	}
 
 	private void HandleError(Exception ex) {
-		WritableMap event = Arguments.createMap();
-		event.putString("exeError", ex.getMessage());
-		dispatchEvent("HandleError", event);
+		dispatchEvent("HandleError", ex.getMessage());
 	}
 }
