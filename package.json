@@ -1,5 +1,5 @@
 {
-  "name": "react-native-rfid-orca50",
+  "name": "@infiniteesoftware/react-native-rfid-orca50",
   "version": "1.0.0",
   "description": "## Getting started",
   "main": "index.js",
@@ -9,9 +9,17 @@
   "keywords": [
     "react-native"
   ],
-  "author": "",
+  "author": "yaoweili",
   "license": "ISC",
   "peerDependencies": {
     "react-native": "^0.41.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eric-LLi/rfid-orca-50.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Eric-LLi/rfid-orca-50/issues"
+  },
+  "homepage": "https://github.com/Eric-LLi/rfid-orca-50#readme"
 }

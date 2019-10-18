@@ -28,7 +28,7 @@ import java.util.ArrayList;
 public abstract class RNRfidOrca50Thread extends Thread {
 	private ReactApplicationContext context;
 
-	// RFID
+	//RFID
 	private byte btReadId = (byte) 0xFF;
 	private byte btRepeat = (byte) 0x01;
 	private int baud = 115200;
@@ -39,7 +39,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 	private RXTXListener mListener = null;
 	private ArrayList<String> tags = new ArrayList<>();
 
-	// Barcode
+	//Barcode
 	private int barcode_baud = 9600;
 	private String barcode_port = "dev/ttyS1";
 	private TDScannerHelper mScanner;
@@ -85,7 +85,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 		boolean result = false;
 		boolean barcodeResult = false;
 		try {
-			// RFID
+			//RFID
 			result = connector.connectCom(mPosPort, baud);
 			mReaderHelper = RFIDReaderHelper.getDefaultHelper();
 			if (!ModuleManager.newInstance().setUHFStatus(true)) {
@@ -96,12 +96,13 @@ public abstract class RNRfidOrca50Thread extends Thread {
 			Log.e("triggerResult", triggerResult + "");
 			stopRead();
 
-			// Barcode
+			//Barcode
 			barcodeResult = mConnector.connectCom(barcode_port, barcode_baud);
 			mScanner = TDScannerHelper.getDefaultHelper();
 			if (!ModuleManager.newInstance().setScanStatus(false)) {
 				throw new RuntimeException(
-						"Barcode scanner on failure,may you open in other Process and do not exit" + " it");
+						"Barcode scanner on failure,may you open in other Process and do not exit" +
+								" it");
 			}
 			InitialListener();
 		} catch (Exception ex) {
@@ -128,19 +129,19 @@ public abstract class RNRfidOrca50Thread extends Thread {
 		ModuleManager.newInstance().setUHFStatus(false);
 		ModuleManager.newInstance().release();
 
-		// if (isConnected()) {
-		// try {
-		// mReaderHelper.unRegisterObservers();
-		// mReaderHelper.signOut();
-		// ModuleManager.newInstance().setUHFStatus(false);
-		// ModuleManager.newInstance().setScanStatus(false);
-		// ModuleManager.newInstance().release();
-		// connector.disConnect();
-		// mConnector.disConnect();
-		// } catch (Exception ex) {
-		// HandleError(ex);
-		// }
-		// }
+//		if (isConnected()) {
+//			try {
+//				mReaderHelper.unRegisterObservers();
+//				mReaderHelper.signOut();
+//				ModuleManager.newInstance().setUHFStatus(false);
+//				ModuleManager.newInstance().setScanStatus(false);
+//				ModuleManager.newInstance().release();
+//				connector.disConnect();
+//				mConnector.disConnect();
+//			} catch (Exception ex) {
+//				HandleError(ex);
+//			}
+//		}
 	}
 
 	public void cleanTagBuffer() {
@@ -155,7 +156,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 			Thread.sleep(1000);
 			if (isConnected()) {
 				byte status = (byte) Integer.parseInt("23", 16);
-				MessageTran messageTran = new MessageTran(btReadId, (byte) 0xA0, new byte[] { status });
+				MessageTran messageTran = new MessageTran(btReadId, (byte) 0xA0, new byte[]{status});
 				mReaderHelper.sendCommand(messageTran.getAryTranData());
 			}
 		} catch (Exception ex) {
@@ -166,7 +167,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 	public void stopRead() {
 		if (isConnected()) {
 			byte status = (byte) Integer.parseInt("00", 16);
-			MessageTran messageTran = new MessageTran(btReadId, (byte) 0xA0, new byte[] { status });
+			MessageTran messageTran = new MessageTran(btReadId, (byte) 0xA0, new byte[]{status});
 			mReaderHelper.sendCommand(messageTran.getAryTranData());
 		}
 	}
@@ -214,6 +215,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 			HandleError(ex);
 		}
 
+
 	}
 
 	private void InitialListener() {
@@ -224,7 +226,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 				String cmdName = CMD.format(cmd);
 				String statusName = ERROR.format(status);
 				if (status != 0) {
-					// If not success, thrown error
+					//If not success, thrown error
 					if (status != 16) {
 						HandleError(new Exception(cmdName + " " + statusName));
 					} else {
@@ -239,7 +241,7 @@ public abstract class RNRfidOrca50Thread extends Thread {
 				Log.e("refreshSetting", "refreshSetting");
 				if (readerSetting.btAryOutputPower.length > 0) {
 					String power = readerSetting.btAryOutputPower[0] + "";
-					// String power = new String(String.valueOf(readerSetting.btAryOutputPower[0]));
+//					String power = new String(String.valueOf(readerSetting.btAryOutputPower[0]));
 					dispatchEvent("getPowerLevel", power);
 				}
 			}
@@ -264,8 +266,8 @@ public abstract class RNRfidOrca50Thread extends Thread {
 
 			@Override
 			protected void onInventoryTagEnd(RXInventoryTag.RXInventoryTagEnd tagEnd) {
-				// Log.e("TagEnd_mTotalRead", tagEnd.mTotalRead + "");
-				// Log.e("TagEnd_mTagCount", tagEnd.mTagCount + "");
+//				Log.e("TagEnd_mTotalRead", tagEnd.mTotalRead + "");
+//				Log.e("TagEnd_mTagCount", tagEnd.mTagCount + "");
 			}
 
 			@Override

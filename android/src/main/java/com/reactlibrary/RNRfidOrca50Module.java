@@ -24,20 +24,17 @@ public class RNRfidOrca50Module extends ReactContextBaseJavaModule implements Li
 		this.scannerthread = new RNRfidOrca50Thread(this.reactContext) {
 			@Override
 			public void dispatchEvent(String name, WritableMap data) {
-				RNRfidOrca50Module.this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-						.emit(name, data);
+				RNRfidOrca50Module.this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(name, data);
 			}
 
 			@Override
 			public void dispatchEvent(String name, String data) {
-				RNRfidOrca50Module.this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-						.emit(name, data);
+				RNRfidOrca50Module.this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(name, data);
 			}
 
 			@Override
 			public void dispatchEvent(String name, WritableArray data) {
-				RNRfidOrca50Module.this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-						.emit(name, data);
+				RNRfidOrca50Module.this.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(name, data);
 			}
 		};
 		scannerthread.start();
